@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PlayDataAPI — Google Play ASO Data API</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --border: #334155;
+      --accent: #6366f1;
+      --accent-light: #818cf8;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --green: #22c55e;
+      --mono: "JetBrains Mono", "Fira Code", "Courier New", monospace;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.6;
+    }
+
+    a { color: var(--accent-light); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* NAV */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 2rem;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: var(--bg);
+      z-index: 100;
+    }
+    .nav-brand { font-weight: 700; font-size: 1.1rem; color: var(--accent-light); }
+    .nav-links { display: flex; gap: 1.5rem; font-size: 0.9rem; color: var(--muted); }
+    .nav-links a { color: var(--muted); }
+    .nav-links a:hover { color: var(--text); }
+
+    /* HERO */
+    .hero {
+      max-width: 760px;
+      margin: 5rem auto 3rem;
+      padding: 0 2rem;
+      text-align: center;
+    }
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 1rem;
+    }
+    .hero h1 span { color: var(--accent-light); }
+    .hero p { color: var(--muted); font-size: 1.15rem; margin-bottom: 2rem; }
+    .btn {
+      display: inline-block;
+      background: var(--accent);
+      color: #fff;
+      padding: 0.75rem 2rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 1rem;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn:hover { background: #4f46e5; text-decoration: none; color: #fff; }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+      margin-left: 0.75rem;
+    }
+    .btn-outline:hover { background: var(--surface); }
+
+    /* CODE BADGE */
+    .code-badge {
+      display: inline-block;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.4rem 1rem;
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 1.5rem;
+    }
+
+    /* FEATURES */
+    .section { max-width: 1000px; margin: 0 auto 5rem; padding: 0 2rem; }
+    .section-title { font-size: 1.5rem; font-weight: 700; text-align: center; margin-bottom: 2.5rem; }
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.75rem;
+    }
+    .card-icon { font-size: 2rem; margin-bottom: 0.75rem; }
+    .card h3 { font-size: 1.05rem; margin-bottom: 0.5rem; }
+    .card p { color: var(--muted); font-size: 0.9rem; }
+
+    /* PRICING */
+    .pricing { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; }
+    .plan {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 2rem 1.75rem;
+    }
+    .plan.featured { border-color: var(--accent); }
+    .plan-name { font-size: 0.85rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
+    .plan-price { font-size: 2.25rem; font-weight: 800; margin: 0.5rem 0; }
+    .plan-price span { font-size: 1rem; font-weight: 400; color: var(--muted); }
+    .plan-desc { color: var(--muted); font-size: 0.9rem; margin-bottom: 1.25rem; }
+    .plan ul { list-style: none; }
+    .plan ul li { padding: 0.35rem 0; font-size: 0.9rem; color: var(--muted); }
+    .plan ul li::before { content: "✓ "; color: var(--green); font-weight: 600; }
+    .badge {
+      display: inline-block;
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.7rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      margin-left: 0.5rem;
+      vertical-align: middle;
+    }
+
+    /* TRY IT */
+    .try-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2.5rem;
+      max-width: 760px;
+      margin: 0 auto 5rem;
+    }
+    .try-section h2 { font-size: 1.4rem; margin-bottom: 0.5rem; }
+    .try-section p { color: var(--muted); font-size: 0.9rem; margin-bottom: 1.5rem; }
+    .input-row { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1rem; }
+    .input-row input {
+      flex: 1;
+      min-width: 200px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.6rem 1rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-family: var(--mono);
+    }
+    .btn-row { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+    .btn-sm {
+      padding: 0.55rem 1.25rem;
+      font-size: 0.9rem;
+      border-radius: 6px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+    .btn-sm:hover { background: #4f46e5; }
+    .json-output {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.25rem;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      color: var(--muted);
+      max-height: 400px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .status-pill {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      margin-bottom: 0.75rem;
+    }
+    .status-ok { background: #14532d; color: #86efac; }
+    .status-err { background: #7f1d1d; color: #fca5a5; }
+    .status-loading { background: #1e3a5f; color: #93c5fd; }
+
+    footer {
+      border-top: 1px solid var(--border);
+      text-align: center;
+      padding: 2rem;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-brand">PlayDataAPI</span>
+  <div class="nav-links">
+    <a href="/docs">Docs</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#try-it">Try It</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="code-badge">GET /apps/com.spotify.music · 200 OK · 43ms</div>
+  <h1>Google Play ASO Data API<br/>for <span>Indie Developers</span></h1>
+  <p>Get app metadata, reviews, keyword rankings, and trending data via REST API.<br/>No scraping setup. No headless browsers. Just one clean endpoint.</p>
+  <a href="/docs" class="btn">Get API Key</a>
+  <a href="#try-it" class="btn btn-outline">Try Live Demo</a>
+</section>
+
+<!-- FEATURES -->
+<section class="section">
+  <div class="cards">
+    <div class="card">
+      <div class="card-icon">⚡</div>
+      <h3>Clean REST API</h3>
+      <p>Standard JSON responses, Bearer token auth, OpenAPI spec included. Integrate in minutes, not hours.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">💸</div>
+      <h3>Indie Pricing</h3>
+      <p>Free tier with 100 req/day for prototyping. Paid plans designed for solo founders — not enterprise contracts.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">📊</div>
+      <h3>Google Play Data</h3>
+      <p>App metadata, reviews, competitor lookups, keyword search, and top chart rankings — all from one API.</p>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="section" id="pricing">
+  <h2 class="section-title">Simple, Transparent Pricing</h2>
+  <div class="pricing">
+    <div class="plan">
+      <div class="plan-name">Free</div>
+      <div class="plan-price">$0 <span>/mo</span></div>
+      <div class="plan-desc">For prototyping and evaluation</div>
+      <ul>
+        <li>100 requests/day</li>
+        <li>All endpoints</li>
+        <li>JSON responses</li>
+        <li>Community support</li>
+      </ul>
+    </div>
+    <div class="plan featured">
+      <div class="plan-name">Starter <span class="badge">Popular</span></div>
+      <div class="plan-price">$19 <span>/mo</span></div>
+      <div class="plan-desc">For solo founders shipping fast</div>
+      <ul>
+        <li>10,000 requests/day</li>
+        <li>All endpoints</li>
+        <li>1 req/sec burst</li>
+        <li>Email support</li>
+        <li>Rate-limit headers</li>
+      </ul>
+    </div>
+    <div class="plan">
+      <div class="plan-name">Growth</div>
+      <div class="plan-price">$49 <span>/mo</span></div>
+      <div class="plan-desc">For tools with real user traction</div>
+      <ul>
+        <li>50,000 requests/day</li>
+        <li>All endpoints</li>
+        <li>5 req/sec burst</li>
+        <li>Priority support</li>
+        <li>Webhook callbacks</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- TRY IT -->
+<div class="section" id="try-it">
+  <div class="try-section">
+    <h2>Try the API Live</h2>
+    <p>Using <code>demo-key-123</code> · 100 req/day free tier</p>
+    <div class="input-row">
+      <input type="text" id="pkg-input" value="com.spotify.music" placeholder="Package ID (e.g. com.spotify.music)" />
+    </div>
+    <div class="btn-row">
+      <button class="btn-sm" onclick="tryApi('info')">Get App Info</button>
+      <button class="btn-sm" onclick="tryApi('reviews')">Get Reviews</button>
+      <button class="btn-sm" onclick="tryApi('similar')">Find Similar Apps</button>
+    </div>
+    <div id="status-bar"></div>
+    <pre class="json-output" id="json-output">// Click a button above to call the API...</pre>
+  </div>
+</div>
+
+<footer>PlayDataAPI &middot; Google Play ASO Data for Developers</footer>
+
+<script>
+  const DEMO_KEY = 'demo-key-123';
+
+  async function tryApi(action) {
+    const pkg = document.getElementById('pkg-input').value.trim();
+    if (!pkg) { alert('Enter a package ID first'); return; }
+
+    const out = document.getElementById('json-output');
+    const bar = document.getElementById('status-bar');
+    bar.innerHTML = '<span class="status-pill status-loading">Loading...</span>';
+    out.textContent = '// Fetching...';
+
+    const endpoints = {
+      info: `/apps/${encodeURIComponent(pkg)}`,
+      reviews: `/apps/${encodeURIComponent(pkg)}/reviews?count=5`,
+      similar: `/apps/${encodeURIComponent(pkg)}/similar`,
+    };
+
+    const url = endpoints[action];
+    try {
+      const res = await fetch(url, {
+        headers: { 'Authorization': `Bearer ${DEMO_KEY}` }
+      });
+      const data = await res.json();
+      if (res.ok) {
+        bar.innerHTML = `<span class="status-pill status-ok">HTTP ${res.status} OK</span>`;
+      } else {
+        bar.innerHTML = `<span class="status-pill status-err">HTTP ${res.status} Error</span>`;
+      }
+      out.textContent = JSON.stringify(data, null, 2);
+    } catch (err) {
+      bar.innerHTML = '<span class="status-pill status-err">Network Error</span>';
+      out.textContent = `// Error: ${err.message}`;
+    }
+  }
+</script>
+
+</body>
+</html>
