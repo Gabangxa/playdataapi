@@ -1,0 +1,412 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "PlayDataAPI",
+    "version": "1.0.0",
+    "description": "Google Play ASO data API for indie mobile developers"
+  },
+  "servers": [
+    { "url": "https://your-app.replit.app", "description": "Production (Replit)" },
+    { "url": "http://localhost:3000", "description": "Local development" }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "API Key"
+      }
+    },
+    "schemas": {
+      "AppDetail": {
+        "type": "object",
+        "properties": {
+          "package_id": { "type": "string", "example": "com.spotify.music" },
+          "title": { "type": "string", "example": "Spotify: Music and Podcasts" },
+          "developer": { "type": "string", "example": "Spotify AB" },
+          "developer_id": { "type": "string", "example": "Spotify+AB" },
+          "category": { "type": "string", "example": "MUSIC_AND_AUDIO" },
+          "rating": { "type": "number", "example": 4.3 },
+          "ratings_count": { "type": "integer", "example": 32000000 },
+          "installs": { "type": "string", "example": "1,000,000,000+" },
+          "price": { "type": "number", "example": 0.0 },
+          "free": { "type": "boolean", "example": true },
+          "description": { "type": "string" },
+          "last_updated": { "type": "string", "example": "2026-03-10" },
+          "version": { "type": "string", "example": "8.9.90.432" },
+          "android_version": { "type": "string", "example": "Varies with device" },
+          "icon_url": { "type": "string", "format": "uri" }
+        }
+      },
+      "AppSummary": {
+        "type": "object",
+        "properties": {
+          "package_id": { "type": "string", "example": "deezer.android.app" },
+          "title": { "type": "string", "example": "Deezer: Music & Podcast Player" },
+          "developer": { "type": "string", "example": "Deezer Music" },
+          "rating": { "type": "number", "example": 4.2 },
+          "installs": { "type": "string", "example": "100,000,000+" },
+          "icon_url": { "type": "string", "format": "uri" }
+        }
+      },
+      "Review": {
+        "type": "object",
+        "properties": {
+          "review_id": { "type": "string" },
+          "author": { "type": "string", "example": "John D." },
+          "rating": { "type": "integer", "minimum": 1, "maximum": 5, "example": 5 },
+          "text": { "type": "string", "example": "Great app!" },
+          "date": { "type": "string", "format": "date", "example": "2026-03-20" },
+          "thumbs_up": { "type": "integer", "example": 124 },
+          "reply": { "type": "string", "nullable": true }
+        }
+      },
+      "TrendingApp": {
+        "allOf": [
+          { "$ref": "#/components/schemas/AppSummary" },
+          {
+            "type": "object",
+            "properties": {
+              "rank": { "type": "integer", "example": 1 }
+            }
+          }
+        ]
+      },
+      "Error": {
+        "type": "object",
+        "required": ["error", "code"],
+        "properties": {
+          "error": { "type": "string", "example": "Invalid API key" },
+          "code": { "type": "string", "example": "auth_required" }
+        }
+      }
+    },
+    "responses": {
+      "Unauthorized": {
+        "description": "Missing or invalid API key",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Error" },
+            "example": { "error": "Invalid API key", "code": "auth_required" }
+          }
+        }
+      },
+      "RateLimited": {
+        "description": "Rate limit exceeded",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Error" },
+            "example": { "error": "Daily rate limit exceeded", "code": "rate_limit" }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "App not found",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Error" },
+            "example": { "error": "App not found on Google Play", "code": "app_not_found" }
+          }
+        }
+      },
+      "BadRequest": {
+        "description": "Invalid parameter",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Error" },
+            "example": { "error": "Query parameter 'q' is required", "code": "invalid_param" }
+          }
+        }
+      },
+      "UpstreamError": {
+        "description": "Google Play fetch failed",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Error" },
+            "example": { "error": "Failed to fetch from Google Play", "code": "upstream_error" }
+          }
+        }
+      }
+    }
+  },
+  "security": [{ "bearerAuth": [] }],
+  "paths": {
+    "/apps/{package_id}": {
+      "get": {
+        "summary": "Get app details",
+        "description": "Fetch full metadata for a Google Play app. Results cached for 1 hour.",
+        "operationId": "getApp",
+        "tags": ["Apps"],
+        "parameters": [
+          {
+            "name": "package_id",
+            "in": "path",
+            "required": true,
+            "description": "Google Play package ID",
+            "schema": { "type": "string", "example": "com.spotify.music" }
+          },
+          {
+            "name": "lang",
+            "in": "query",
+            "schema": { "type": "string", "default": "en", "example": "en" }
+          },
+          {
+            "name": "country",
+            "in": "query",
+            "schema": { "type": "string", "default": "us", "example": "us" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "App metadata",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AppDetail" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/RateLimited" },
+          "502": { "$ref": "#/components/responses/UpstreamError" }
+        }
+      }
+    },
+    "/apps/{package_id}/reviews": {
+      "get": {
+        "summary": "Get app reviews",
+        "description": "Fetch recent user reviews. Results cached for 30 minutes.",
+        "operationId": "getReviews",
+        "tags": ["Apps"],
+        "parameters": [
+          {
+            "name": "package_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "example": "com.spotify.music" }
+          },
+          {
+            "name": "count",
+            "in": "query",
+            "schema": { "type": "integer", "default": 20, "minimum": 1, "maximum": 100, "example": 20 }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "schema": { "type": "string", "enum": ["newest", "most_relevant"], "default": "newest" }
+          },
+          {
+            "name": "lang",
+            "in": "query",
+            "schema": { "type": "string", "default": "en", "example": "en" }
+          },
+          {
+            "name": "country",
+            "in": "query",
+            "schema": { "type": "string", "default": "us", "example": "us" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Reviews list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "package_id": { "type": "string" },
+                    "count": { "type": "integer" },
+                    "reviews": { "type": "array", "items": { "$ref": "#/components/schemas/Review" } }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/RateLimited" },
+          "502": { "$ref": "#/components/responses/UpstreamError" }
+        }
+      }
+    },
+    "/apps/{package_id}/similar": {
+      "get": {
+        "summary": "Get similar apps",
+        "description": "Find competitor or related apps on Google Play.",
+        "operationId": "getSimilar",
+        "tags": ["Apps"],
+        "parameters": [
+          {
+            "name": "package_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "example": "com.spotify.music" }
+          },
+          {
+            "name": "lang",
+            "in": "query",
+            "schema": { "type": "string", "default": "en", "example": "en" }
+          },
+          {
+            "name": "country",
+            "in": "query",
+            "schema": { "type": "string", "default": "us", "example": "us" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Similar apps",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "package_id": { "type": "string" },
+                    "similar": { "type": "array", "items": { "$ref": "#/components/schemas/AppSummary" } }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/RateLimited" },
+          "502": { "$ref": "#/components/responses/UpstreamError" }
+        }
+      }
+    },
+    "/search": {
+      "get": {
+        "summary": "Search Google Play",
+        "description": "Search apps by keyword.",
+        "operationId": "searchApps",
+        "tags": ["Discovery"],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "description": "Search keyword or phrase",
+            "schema": { "type": "string", "example": "music player" }
+          },
+          {
+            "name": "n",
+            "in": "query",
+            "schema": { "type": "integer", "default": 20, "minimum": 1, "maximum": 50, "example": 20 }
+          },
+          {
+            "name": "lang",
+            "in": "query",
+            "schema": { "type": "string", "default": "en", "example": "en" }
+          },
+          {
+            "name": "country",
+            "in": "query",
+            "schema": { "type": "string", "default": "us", "example": "us" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Search results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "query": { "type": "string" },
+                    "count": { "type": "integer" },
+                    "results": { "type": "array", "items": { "$ref": "#/components/schemas/AppSummary" } }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/RateLimited" },
+          "502": { "$ref": "#/components/responses/UpstreamError" }
+        }
+      }
+    },
+    "/trending": {
+      "get": {
+        "summary": "Top charts",
+        "description": "Fetch Google Play top chart apps by collection and optional category.",
+        "operationId": "getTrending",
+        "tags": ["Discovery"],
+        "parameters": [
+          {
+            "name": "collection",
+            "in": "query",
+            "schema": { "type": "string", "enum": ["top_free", "top_paid", "top_grossing"], "default": "top_free" }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "schema": { "type": "string", "example": "MUSIC_AND_AUDIO" }
+          },
+          {
+            "name": "n",
+            "in": "query",
+            "schema": { "type": "integer", "default": 20, "minimum": 1, "maximum": 100, "example": 20 }
+          },
+          {
+            "name": "lang",
+            "in": "query",
+            "schema": { "type": "string", "default": "en", "example": "en" }
+          },
+          {
+            "name": "country",
+            "in": "query",
+            "schema": { "type": "string", "default": "us", "example": "us" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Trending apps",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "collection": { "type": "string" },
+                    "category": { "type": "string", "nullable": true },
+                    "count": { "type": "integer" },
+                    "apps": { "type": "array", "items": { "$ref": "#/components/schemas/TrendingApp" } }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/RateLimited" },
+          "502": { "$ref": "#/components/responses/UpstreamError" }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health check",
+        "description": "Returns server status. No authentication required.",
+        "operationId": "health",
+        "tags": ["Infrastructure"],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Server is healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": { "status": { "type": "string", "example": "ok" } }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
