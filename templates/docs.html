@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PlayDataAPI — API Reference</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --border: #334155;
+      --accent: #6366f1;
+      --accent-light: #818cf8;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --green: #22c55e;
+      --mono: "JetBrains Mono", "Fira Code", "Courier New", monospace;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* SIDEBAR */
+    aside {
+      width: 240px;
+      min-width: 240px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 1.5rem 1rem;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+    }
+    .sidebar-brand { font-weight: 700; color: var(--accent-light); font-size: 1rem; margin-bottom: 1.5rem; display: block; text-decoration: none; }
+    .sidebar-group { margin-bottom: 1.25rem; }
+    .sidebar-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 0.5rem; }
+    .sidebar-link {
+      display: block;
+      padding: 0.35rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      color: var(--muted);
+      text-decoration: none;
+      transition: background 0.15s;
+    }
+    .sidebar-link:hover { background: var(--bg); color: var(--text); }
+    .method-get {
+      display: inline-block;
+      background: #14532d;
+      color: #86efac;
+      font-size: 0.65rem;
+      font-family: var(--mono);
+      padding: 0.1rem 0.35rem;
+      border-radius: 3px;
+      margin-right: 0.4rem;
+      font-weight: 700;
+    }
+
+    /* MAIN */
+    main {
+      flex: 1;
+      padding: 2.5rem 3rem;
+      max-width: 820px;
+    }
+
+    h1 { font-size: 1.75rem; font-weight: 800; margin-bottom: 0.5rem; }
+    h2 { font-size: 1.25rem; font-weight: 700; margin: 3rem 0 1rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+    h3 { font-size: 1rem; font-weight: 600; margin: 1.5rem 0 0.75rem; }
+    p { color: var(--muted); font-size: 0.92rem; line-height: 1.7; margin-bottom: 0.75rem; }
+
+    /* QUICK START BOX */
+    .quickstart {
+      background: var(--surface);
+      border: 1px solid var(--accent);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 2.5rem;
+    }
+    .quickstart h3 { margin-top: 0; }
+    .key-pill {
+      display: inline-block;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      padding: 0.3rem 0.75rem;
+      border-radius: 6px;
+      color: var(--accent-light);
+      margin: 0.5rem 0;
+    }
+    .key-note { font-size: 0.8rem; color: var(--muted); margin-top: 0.4rem; }
+
+    /* ENDPOINT BLOCK */
+    .endpoint {
+      margin-bottom: 3rem;
+    }
+    .endpoint-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+    .method-badge {
+      background: #14532d;
+      color: #86efac;
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      padding: 0.3rem 0.6rem;
+      border-radius: 5px;
+      font-weight: 700;
+    }
+    .endpoint-path {
+      font-family: var(--mono);
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    /* PARAMS TABLE */
+    table { width: 100%; border-collapse: collapse; margin: 0.75rem 0 1.25rem; font-size: 0.85rem; }
+    th { text-align: left; color: var(--muted); font-weight: 600; padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border); }
+    td { padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border); color: var(--muted); vertical-align: top; }
+    td:first-child { font-family: var(--mono); color: var(--text); }
+    .req-badge { color: #f87171; font-size: 0.7rem; margin-left: 0.25rem; }
+
+    /* CODE BLOCK */
+    .code-block {
+      position: relative;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      color: var(--muted);
+      overflow-x: auto;
+      white-space: pre;
+      margin: 0.5rem 0 1.25rem;
+    }
+    .copy-btn {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.7rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .copy-btn:hover { color: var(--text); }
+
+    /* ERROR TABLE */
+    .error-table td:nth-child(2) { font-family: var(--mono); color: var(--accent-light); }
+  </style>
+</head>
+<body>
+
+<aside>
+  <a class="sidebar-brand" href="/">← PlayDataAPI</a>
+  <div class="sidebar-group">
+    <div class="sidebar-label">Getting Started</div>
+    <a class="sidebar-link" href="#quickstart">Quick Start</a>
+    <a class="sidebar-link" href="#auth">Authentication</a>
+    <a class="sidebar-link" href="#rate-limits">Rate Limits</a>
+    <a class="sidebar-link" href="#errors">Error Codes</a>
+  </div>
+  <div class="sidebar-group">
+    <div class="sidebar-label">Endpoints</div>
+    <a class="sidebar-link" href="#ep-app"><span class="method-get">GET</span>/apps/{id}</a>
+    <a class="sidebar-link" href="#ep-reviews"><span class="method-get">GET</span>/apps/{id}/reviews</a>
+    <a class="sidebar-link" href="#ep-similar"><span class="method-get">GET</span>/apps/{id}/similar</a>
+    <a class="sidebar-link" href="#ep-search"><span class="method-get">GET</span>/search</a>
+    <a class="sidebar-link" href="#ep-trending"><span class="method-get">GET</span>/trending</a>
+    <a class="sidebar-link" href="#ep-health"><span class="method-get">GET</span>/health</a>
+  </div>
+</aside>
+
+<main>
+  <h1>API Reference</h1>
+  <p>PlayDataAPI gives indie mobile developers access to Google Play app metadata, reviews, search, and trending charts via a simple REST API.</p>
+
+  <!-- QUICK START -->
+  <div class="quickstart" id="quickstart">
+    <h3>Your Demo API Key</h3>
+    <div class="key-pill">demo-key-123</div>
+    <p class="key-note">Free tier · 100 requests/day · No signup required</p>
+    <h3 style="margin-top:1rem;">Quick Start</h3>
+    <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">Copy</button>curl https://your-app.replit.app/apps/com.spotify.music \
+  -H "Authorization: Bearer demo-key-123"</div>
+  </div>
+
+  <!-- AUTH -->
+  <h2 id="auth">Authentication</h2>
+  <p>All API requests (except <code>/health</code>) require an API key passed as a Bearer token in the <code>Authorization</code> header.</p>
+  <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">Copy</button>Authorization: Bearer demo-key-123</div>
+
+  <!-- RATE LIMITS -->
+  <h2 id="rate-limits">Rate Limits</h2>
+  <p>Every response includes rate limit headers:</p>
+  <table>
+    <tr><th>Header</th><th>Description</th></tr>
+    <tr><td>X-RateLimit-Remaining</td><td>Requests remaining in the current 24-hour window</td></tr>
+    <tr><td>X-RateLimit-Reset</td><td>Unix timestamp when the limit resets</td></tr>
+  </table>
+  <table>
+    <tr><th>Plan</th><th>Requests/day</th><th>Burst</th></tr>
+    <tr><td>Free</td><td>100</td><td>1 req/sec</td></tr>
+    <tr><td>Starter ($19/mo)</td><td>10,000</td><td>1 req/sec</td></tr>
+    <tr><td>Growth ($49/mo)</td><td>50,000</td><td>5 req/sec</td></tr>
+  </table>
+
+  <!-- ====== ENDPOINTS ====== -->
+
+  <!-- APP DETAILS -->
+  <h2 id="ep-app">App Details</h2>
+  <div class="endpoint">
+    <div class="endpoint-header">
+      <span class="method-badge">GET</span>
+      <span class="endpoint-path">/apps/{package_id}</span>
+    </div>
+    <p>Fetch full app metadata for any Google Play package ID. Results are cached for 1 hour.</p>
+    <h3>Path Parameters</h3>
+    <table>
+      <tr><th>Name</th><th>Type</th><th>Description</th></tr>
+      <tr><td>package_id <span class="req-badge">required</span></td><td>string</td><td>Google Play package ID, e.g. <code>com.spotify.music</code></td></tr>
+    </table>
+    <h3>Query Parameters</h3>
+    <table>
+      <tr><th>Name</th><th>Default</th><th>Description</th></tr>
+      <tr><td>lang</td><td>en</td><td>Language code (ISO 639-1)</td></tr>
+      <tr><td>country</td><td>us</td><td>Country code (ISO 3166-1 alpha-2)</td></tr>
+    </table>
+    <h3>Example Request</h3>
+    <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">Copy</button>curl https://your-app.replit.app/apps/com.spotify.music \
+  -H "Authorization: Bearer demo-key-123"</div>
+    <h3>Example Response</h3>
+    <div class="code-block">{
+  "package_id": "com.spotify.music",
+  "title": "Spotify: Music and Podcasts",
+  "developer": "Spotify AB",
+  "developer_id": "Spotify+AB",
+  "category": "MUSIC_AND_AUDIO",
+  "rating": 4.3,
+  "ratings_count": 32000000,
+  "installs": "1,000,000,000+",
+  "price": 0.0,
+  "free": true,
+  "description": "...",
+  "last_updated": "2026-03-10",
+  "version": "8.9.90.432",
+  "android_version": "Varies with device",
+  "icon_url": "https://..."
+}</div>
+  </div>
+
+  <!-- REVIEWS -->
+  <h2 id="ep-reviews">App Reviews</h2>
+  <div class="endpoint">
+    <div class="endpoint-header">
+      <span class="method-badge">GET</span>
+      <span class="endpoint-path">/apps/{package_id}/reviews</span>
+    </div>
+    <p>Fetch recent user reviews from Google Play. Results cached for 30 minutes.</p>
+    <h3>Query Parameters</h3>
+    <table>
+      <tr><th>Name</th><th>Default</th><th>Description</th></tr>
+      <tr><td>count</td><td>20</td><td>Number of reviews to return (max 100)</td></tr>
+      <tr><td>sort</td><td>newest</td><td><code>newest</code> or <code>most_relevant</code></td></tr>
+      <tr><td>lang</td><td>en</td><td>Language code</td></tr>
+      <tr><td>country</td><td>us</td><td>Country code</td></tr>
+    </table>
+    <h3>Example Request</h3>
+    <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">Copy</button>curl "https://your-app.replit.app/apps/com.spotify.music/reviews?count=5&sort=newest" \
+  -H "Authorization: Bearer demo-key-123"</div>
+    <h3>Example Response</h3>
+    <div class="code-block">{
+  "package_id": "com.spotify.music",
+  "count": 5,
+  "reviews": [
+    {
+      "review_id": "abc123",
+      "author": "John D.",
+      "rating": 5,
+      "text": "Great app!",
+      "date": "2026-03-20",
+      "thumbs_up": 124,
+      "reply": null
+    }
+  ]
+}</div>
+  </div>
+
+  <!-- SIMILAR -->
+  <h2 id="ep-similar">Similar Apps</h2>
+  <div class="endpoint">
+    <div class="endpoint-header">
+      <span class="method-badge">GET</span>
+      <span class="endpoint-path">/apps/{package_id}/similar</span>
+    </div>
+    <p>Find competitor or similar apps on Google Play.</p>
+    <h3>Query Parameters</h3>
+    <table>
+      <tr><th>Name</th><th>Default</th><th>Description</th></tr>
+      <tr><td>lang</td><td>en</td><td>Language code</td></tr>
+      <tr><td>country</td><td>us</td><td>Country code</td></tr>
+    </table>
+    <h3>Example Request</h3>
+    <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">Copy</button>curl https://your-app.replit.app/apps/com.spotify.music/similar \
+  -H "Authorization: Bearer demo-key-123"</div>
+    <h3>Example Response</h3>
+    <div class="code-block">{
+  "package_id": "com.spotify.music",
+  "similar": [
+    {
+      "package_id": "deezer.android.app",
+      "title": "Deezer: Music & Podcast Player",
+      "developer": "Deezer Music",
+      "rating": 4.2,
+      "installs": "100,000,000+",
+      "icon_url": "https://..."
+    }
+  ]
+}</div>
+  </div>
+
+  <!-- SEARCH -->
+  <h2 id="ep-search">Search</h2>
+  <div class="endpoint">
+    <div class="endpoint-header">
+      <span class="method-badge">GET</span>
+      <span class="endpoint-path">/search</span>
+    </div>
+    <p>Search Google Play by keyword.</p>
+    <h3>Query Parameters</h3>
+    <table>
+      <tr><th>Name</th><th>Default</th><th>Description</th></tr>
+      <tr><td>q <span class="req-badge">required</span></td><td>—</td><td>Search keyword or phrase</td></tr>
+      <tr><td>n</td><td>20</td><td>Number of results (max 50)</td></tr>
+      <tr><td>lang</td><td>en</td><td>Language code</td></tr>
+      <tr><td>country</td><td>us</td><td>Country code</td></tr>
+    </table>
+    <h3>Example Request</h3>
+    <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">Copy</button>curl "https://your-app.replit.app/search?q=music+player&n=5" \
+  -H "Authorization: Bearer demo-key-123"</div>
+    <h3>Example Response</h3>
+    <div class="code-block">{
+  "query": "music player",
+  "count": 5,
+  "results": [
+    {
+      "package_id": "com.spotify.music",
+      "title": "Spotify",
+      "developer": "Spotify AB",
+      "rating": 4.3,
+      "installs": "1,000,000,000+",
+      "icon_url": "https://..."
+    }
+  ]
+}</div>
+  </div>
+
+  <!-- TRENDING -->
+  <h2 id="ep-trending">Trending / Top Charts</h2>
+  <div class="endpoint">
+    <div class="endpoint-header">
+      <span class="method-badge">GET</span>
+      <span class="endpoint-path">/trending</span>
+    </div>
+    <p>Fetch Google Play top charts by collection and optional category.</p>
+    <h3>Query Parameters</h3>
+    <table>
+      <tr><th>Name</th><th>Default</th><th>Description</th></tr>
+      <tr><td>collection</td><td>top_free</td><td><code>top_free</code> | <code>top_paid</code> | <code>top_grossing</code></td></tr>
+      <tr><td>category</td><td>—</td><td>e.g. <code>MUSIC_AND_AUDIO</code>, <code>GAMES</code>, <code>SOCIAL</code></td></tr>
+      <tr><td>n</td><td>20</td><td>Number of results (max 100)</td></tr>
+      <tr><td>lang</td><td>en</td><td>Language code</td></tr>
+      <tr><td>country</td><td>us</td><td>Country code</td></tr>
+    </table>
+    <h3>Example Request</h3>
+    <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">Copy</button>curl "https://your-app.replit.app/trending?collection=top_free&category=MUSIC_AND_AUDIO&n=5" \
+  -H "Authorization: Bearer demo-key-123"</div>
+    <h3>Example Response</h3>
+    <div class="code-block">{
+  "collection": "top_free",
+  "category": "MUSIC_AND_AUDIO",
+  "count": 5,
+  "apps": [
+    {
+      "rank": 1,
+      "package_id": "com.spotify.music",
+      "title": "Spotify",
+      "developer": "Spotify AB",
+      "rating": 4.3,
+      "installs": "1,000,000,000+",
+      "icon_url": "https://..."
+    }
+  ]
+}</div>
+  </div>
+
+  <!-- HEALTH -->
+  <h2 id="ep-health">Health Check</h2>
+  <div class="endpoint">
+    <div class="endpoint-header">
+      <span class="method-badge">GET</span>
+      <span class="endpoint-path">/health</span>
+    </div>
+    <p>No authentication required. Returns server status.</p>
+    <div class="code-block">{"status": "ok"}</div>
+  </div>
+
+  <!-- ERRORS -->
+  <h2 id="errors">Error Codes</h2>
+  <p>All errors use a consistent JSON format:</p>
+  <div class="code-block">{"error": "Human-readable message", "code": "machine_readable_code"}</div>
+  <table class="error-table">
+    <tr><th>HTTP Status</th><th>Code</th><th>Meaning</th></tr>
+    <tr><td>400</td><td>invalid_param</td><td>Missing or invalid query parameter</td></tr>
+    <tr><td>401</td><td>auth_required</td><td>Missing or invalid API key</td></tr>
+    <tr><td>404</td><td>app_not_found</td><td>Package ID not found on Google Play</td></tr>
+    <tr><td>429</td><td>rate_limit</td><td>Daily or per-second rate limit exceeded</td></tr>
+    <tr><td>502</td><td>upstream_error</td><td>Failed to fetch data from Google Play</td></tr>
+  </table>
+</main>
+
+<script>
+  function copyCode(btn) {
+    const block = btn.parentElement;
+    const text = block.textContent.replace('Copy', '').trim();
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = 'Copied!';
+      setTimeout(() => { btn.textContent = 'Copy'; }, 1500);
+    });
+  }
+</script>
+
+</body>
+</html>
